@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,7 +42,13 @@ def main():
     profile = os.environ.get("FLOATTUBE_NOTARY_PROFILE", "")
     if args.signed and (not identity.startswith("Developer ID Application:") or not profile):
         parser.error("Set FLOATTUBE_SIGN_IDENTITY and FLOATTUBE_NOTARY_PROFILE for signed builds.")
-    build = ROOT / "build"
+    # Build outside the user's home: some Swift versions embed source locations
+    # even in optimized, non-debug binaries. Never compile generated code in a
+    # personal checkout path.
+    with tempfile.TemporaryDirectory(prefix="floattube-build-", dir="/private/tmp") as temporary:
+        build_app(args, version, build_number, identity, profile, Path(temporary))
+
+def build_app(args, version, build_number, identity, profile, build):
     resources = build / "resources"
     resources.mkdir(parents=True, exist_ok=True)
     # Only the browser extension goes into the Safari bundle, never the repository.
@@ -56,7 +63,9 @@ def main():
         "--bundle-identifier", "com.yansilva.FloatTube", "--macos-only", "--swift",
         "--copy-resources", "--no-open", "--no-prompt", "--force")
     project = build / "generated/FloatTube/FloatTube.xcodeproj"
-    log = build / "compile.log"
+    local_build = ROOT / "build"
+    local_build.mkdir(exist_ok=True)
+    log = local_build / "compile.log"
     command = ["xcodebuild", "-project", str(project), "-scheme", "FloatTube",
         "-configuration", "Release", "-derivedDataPath", str(build / "DerivedData"),
         "MACOSX_DEPLOYMENT_TARGET=13.0", "MARKETING_VERSION=" + version,
@@ -108,6 +117,14 @@ def main():
     metadata = {"version": version, "build": build_number, "commit": git("rev-parse", "HEAD"),
         "signed": args.signed, "architecture": "universal" if args.universal else platform.machine()}
     (dist / "build-info.json").write_text(json.dumps(metadata, indent=2) + "\n")
+    # Retain an installable local product and an inspectable generated project.
+    local_app = local_build / "DerivedData/Build/Products/Release/FloatTube.app"
+    if local_app.exists(): shutil.rmtree(local_app)
+    local_app.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(app, local_app)
+    generated = local_build / "generated"
+    if generated.exists(): shutil.rmtree(generated)
+    shutil.copytree(build / "generated", generated)
     print("Built " + archive.name + " (" + version + ")")
 
 if __name__ == "__main__":
