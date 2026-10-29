@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -63,6 +64,7 @@ def main():
         "CODE_SIGN_STYLE=Manual", "CODE_SIGNING_ALLOWED=YES",
         "GCC_GENERATE_DEBUGGING_SYMBOLS=NO", "SWIFT_SERIALIZE_DEBUGGING_OPTIONS=NO",
         "COPY_PHASE_STRIP=YES", "STRIP_INSTALLED_PRODUCT=YES",
+        'OTHER_LDFLAGS=$(inherited) -Wl,-oso_prefix,"' + str(Path.home()) + '/"',
         'OTHER_SWIFT_FLAGS=$(inherited) -file-prefix-map "' + str(Path.home()) +
         '=/build-host" -debug-prefix-map "' + str(Path.home()) + '=/build-host"']
     if args.universal:
@@ -91,7 +93,12 @@ def main():
     with zipfile.ZipFile(archive) as package:
         private_prefix = str(Path.home()).encode() + b"/"
         for name in package.namelist():
-            if private_prefix in package.read(name):
+            data = package.read(name)
+            if private_prefix in data:
+                # Only emit sanitized path strings, never binary contents or the home prefix.
+                paths = re.findall(re.escape(private_prefix) + rb"[^\x00\r\n]{0,240}", data)
+                for path in sorted(set(paths))[:5]:
+                    print("Embedded path: " + path.replace(private_prefix, b"<build-home>/").decode("utf-8", errors="replace"), file=sys.stderr)
                 archive.unlink()
                 raise RuntimeError("Packaged app contains a local home path in " + name + "; distribution stopped")
     digest = hashlib.sha256(archive.read_bytes()).hexdigest()
