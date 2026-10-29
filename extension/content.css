@@ -1,0 +1,5 @@
+/* Let YouTube supply the button dimensions, opacity, and hover background. */
+button.floattube-button { position: relative; vertical-align: top; cursor: pointer; }
+button.floattube-button svg { padding: 0 !important; margin: 0 !important; border: 0; box-sizing: border-box; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: block; width: 36px; height: 36px; max-width: 100%; max-height: 100%; fill: currentColor; pointer-events: none; }
+button.floattube-button:focus-visible { outline: 2px solid white; outline-offset: -5px; }
+.floattube-status { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 2147483647; max-width: min(440px, 85vw); padding: 14px 18px; border-radius: 12px; background: #17191f; color: #fff; box-shadow: 0 4px 24px #0006; font: 14px/1.5 system-ui, sans-serif; pointer-events: none; }

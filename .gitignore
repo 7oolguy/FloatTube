@@ -1,0 +1,28 @@
+# Generated projects, compiled apps, archives and diagnostics
+/build/
+/dist/
+/work/
+*.app/
+*.dSYM/
+*.zip
+*.dmg
+*.pkg
+*.log
+# Apple signing material and local configuration
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.pem
+*.key
+*.mobileprovision
+*.provisionprofile
+*.keychain*
+# macOS / Xcode user state
+.DS_Store
+xcuserdata/
+*.xcuserstate
+node_modules/
+__pycache__/
+*.pyc

@@ -1,0 +1,44 @@
+name: macOS build and checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  macos:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Tests and source policy
+        run: |
+          npm test
+          npm run check
+          python3 scripts/check.py
+          python3 -m unittest discover -s tests -p '*_test.py'
+      - name: Scan for secrets
+        run: |
+          brew install gitleaks
+          gitleaks git --redact --no-banner .
+      - name: Compile universal macOS app
+        run: ./build-safari.command --universal
+      - name: Upload development build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: FloatTube-macOS-development
+          path: |
+            dist/FloatTube-macOS-development.zip
+            dist/FloatTube-macOS-development.zip.sha256
+            dist/build-info.json
+          if-no-files-found: error
+          retention-days: 14
