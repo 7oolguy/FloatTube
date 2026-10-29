@@ -1,0 +1,12 @@
+{
+  "name": "floattube-safari",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "check": "node --check extension/pip.js && node --check extension/content.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
