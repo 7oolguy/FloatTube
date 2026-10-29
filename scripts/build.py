@@ -58,11 +58,13 @@ def main():
     project = build / "generated/FloatTube/FloatTube.xcodeproj"
     log = build / "compile.log"
     command = ["xcodebuild", "-project", str(project), "-scheme", "FloatTube",
-        "-configuration", "Release", "-derivedDataPath", str(build / "DerivedData"),
+        "-configuration", "Release", "-enableCodeCoverage", "NO", "-derivedDataPath", str(build / "DerivedData"),
         "MACOSX_DEPLOYMENT_TARGET=13.0", "MARKETING_VERSION=" + version,
         "CURRENT_PROJECT_VERSION=" + build_number, "CODE_SIGN_IDENTITY=" + (identity if args.signed else "-"),
         "CODE_SIGN_STYLE=Manual", "CODE_SIGNING_ALLOWED=YES",
         "GCC_GENERATE_DEBUGGING_SYMBOLS=NO", "SWIFT_SERIALIZE_DEBUGGING_OPTIONS=NO",
+        "CLANG_ENABLE_CODE_COVERAGE=NO", "GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=NO",
+        "GCC_GENERATE_TEST_COVERAGE_FILES=NO",
         "COPY_PHASE_STRIP=YES", "STRIP_INSTALLED_PRODUCT=YES",
         'OTHER_LDFLAGS=$(inherited) -Wl,-oso_prefix,"' + str(Path.home()) + '/"',
         'OTHER_SWIFT_FLAGS=$(inherited) -file-prefix-map "' + str(Path.home()) +
