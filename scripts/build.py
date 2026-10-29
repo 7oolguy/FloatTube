@@ -62,7 +62,9 @@ def main():
         "CURRENT_PROJECT_VERSION=" + build_number, "CODE_SIGN_IDENTITY=" + (identity if args.signed else "-"),
         "CODE_SIGN_STYLE=Manual", "CODE_SIGNING_ALLOWED=YES",
         "GCC_GENERATE_DEBUGGING_SYMBOLS=NO", "SWIFT_SERIALIZE_DEBUGGING_OPTIONS=NO",
-        "COPY_PHASE_STRIP=YES", "STRIP_INSTALLED_PRODUCT=YES"]
+        "COPY_PHASE_STRIP=YES", "STRIP_INSTALLED_PRODUCT=YES",
+        'OTHER_SWIFT_FLAGS=$(inherited) -file-prefix-map "' + str(Path.home()) +
+        '=/build-host" -debug-prefix-map "' + str(Path.home()) + '=/build-host"']
     if args.universal:
         command += ["ARCHS=arm64 x86_64", "ONLY_ACTIVE_ARCH=NO"]
     if args.signed:
@@ -91,7 +93,7 @@ def main():
         for name in package.namelist():
             if private_prefix in package.read(name):
                 archive.unlink()
-                raise RuntimeError("Packaged app contains a local home path; distribution stopped")
+                raise RuntimeError("Packaged app contains a local home path in " + name + "; distribution stopped")
     digest = hashlib.sha256(archive.read_bytes()).hexdigest()
     (dist / (archive.name + ".sha256")).write_text(digest + "  " + archive.name + "\n")
     metadata = {"version": version, "build": build_number, "commit": git("rev-parse", "HEAD"),
