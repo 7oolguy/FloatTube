@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "FloatTube",
+  "version": "0.1.0",
+  "description": "Open YouTube in Safari\u2019s native floating Picture in Picture player.",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://m.youtube.com/*"
+      ],
+      "js": [
+        "pip.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+# Security and privacy
+
+FloatTube only injects its player control on HTTPS YouTube pages. It uses Safari's native Picture in Picture API, with no analytics, third-party runtime packages, remote scripts, telemetry, page-content uploads, or background extension worker. It does not read cookies, passwords, or account identifiers. Safari's website permission UI describes the broader ability of content scripts; FloatTube only uses the video element and player controls.
+
+The optional updater contacts api.github.com and GitHub release asset hosts. GitHub receives normal request metadata, including IP address. It sends no YouTube history, account details, or analytics. Update installation is disabled unless an expected Apple Team ID is configured. Every candidate must have the expected bundle identifier, a valid Developer ID signature from that team, and pass Apple's Gatekeeper assessment. Unsigned development builds cannot be installed by the updater. GitHub release ownership and the Apple signing key are trust boundaries.
+
+Generated apps, diagnostics, environment files, certificates, private keys, provisioning profiles, and Xcode user state are excluded from Git. Build artifacts contain only the generated app, not source checkouts or raw build logs. Compiler metadata inside development binaries may still contain build paths; public production releases should be signed Release builds. A secret scan reduces risk; it is not a guarantee that no sensitive information exists.
+
+Never paste signing credentials into an issue, commit, or workflow file. Configure signing locally in Keychain. Do not enable unsigned extensions for untrusted downloads. For a suspected vulnerability, use GitHub's private vulnerability reporting if available; otherwise contact the maintainer privately before posting exploit details.
